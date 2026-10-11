@@ -2396,5 +2396,213 @@ tsInit();
   window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 })();
 </script>
+<script>
+/* ===== Synchro Google Sheet (version GitHub) =====
+   Les noms restent sur l'appareil : avant l'envoi, chaque nom est remplacé par des initiales
+   (L.M., L.M.2…). La table de correspondance ne quitte jamais l'appareil ; au retour, les noms
+   sont remis. Sur claude.ai, la synchro du compte existante reste seule active. */
+(function(){
+if(window.claude&&window.claude.use)return;
+if(typeof TS==='undefined'||typeof tsSave!=='function')return;
+const CFG={"app": "tt", "roster": "tt-classes"};
+const P='sy-'+CFG.app+'-';
+const st={get(k,d){try{const v=localStorage.getItem(P+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(P+k,JSON.stringify(v))}catch(e){}}};
+const SY={url:st.get('url',''),key:st.get('key',''),pushed:st.get('pushed',{}),alias:st.get('alias',{}),last:st.get('last',0),
+  err:'',busy:false,blocked:0,timer:null,lastPull:0,again:false};
+const on=()=>!!(SY.url&&SY.key);
+
+/* --- noms --- */
+const NAMEK=new Set(['names','name','n','who','by','teams','tables','o','a','b','ref','players','joueurs']);
+const SKIPK=new Set(['id','kind','type','mode','date','updated','deleted','tid','d','q']);
+const DEF=/^[ÉéEe]quipe\s+\S{1,2}$/;
+const INI=/^(\p{Lu}\.)+\d*$/u;   /* déjà des initiales (reçues d'un autre appareil) : ce n'est pas un nom */
+function addTok(set,s){if(typeof s!=='string')return;[s].concat(s.split(/\s*[\/,;+&]\s*|\s+et\s+/)).forEach(x=>{x=x.trim();if(x.length>=2&&/\p{L}/u.test(x)&&!DEF.test(x)&&!INI.test(x))set.add(x)})}
+function collect(v,k,set){
+  if(typeof v==='string'){if(NAMEK.has(k))addTok(set,v);return}
+  if(Array.isArray(v)){v.forEach(x=>collect(x,k,set));return}
+  if(v&&typeof v==='object')for(const kk of Object.keys(v))collect(v[kk],kk,set);
+}
+function names(){
+  const set=new Set();
+  if(CFG.roster){try{const R=JSON.parse(localStorage.getItem(CFG.roster)||'{}')||{};Object.values(R).forEach(t=>String(t).split(/\n/).forEach(l=>addTok(set,l)))}catch(e){}}
+  for(const r of Object.values(TS.list)){
+    if(!r||typeof r!=='object')continue;
+    if(r.kind==='classe'){collect(r.students,'students',set);continue}
+    collect(r,'',set);
+  }
+  return set;
+}
+function initials(n){return n.split(/[\s\-']+/).filter(Boolean).map(w=>w[0].toUpperCase()+'.').join('')||'?.'}
+function dict(){
+  const used=new Set(Object.values(SY.alias));let add=false;
+  for(const n of names()){
+    if(SY.alias[n])continue;
+    const b=initials(n);let a=b,i=2;while(used.has(a))a=b+(i++);
+    SY.alias[n]=a;used.add(a);add=true;
+  }
+  if(add)st.set('alias',SY.alias);
+  return SY.alias;
+}
+const esc=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+function rx(list,flags){if(!list.length)return null;list=[...list].sort((a,b)=>b.length-a.length);
+  return new RegExp('(^|[^\\p{L}\\p{N}])('+list.map(esc).join('|')+')(?=[^\\p{L}\\p{N}]|$)',flags)}
+function tf(v,re,map,k){
+  if(!re)return v;
+  const rep=s=>s.replace(re,(m,p,x)=>p+(map[x]!=null?map[x]:x));
+  if(typeof v==='string')return SKIPK.has(k)?v:rep(v);
+  if(Array.isArray(v))return v.map(x=>tf(x,re,map,k));
+  if(v&&typeof v==='object'){const o={};for(const kk of Object.keys(v))o[SKIPK.has(kk)?kk:rep(kk)]=tf(v[kk],re,map,kk);return o}
+  return v;
+}
+function toSheet(r){const A=dict(),re=rx(Object.keys(A),'gu');return JSON.stringify(tf(r,re,A,''))}
+function fromSheet(o){
+  const R={};for(const [n,a] of Object.entries(SY.alias))R[a]=n;
+  return tf(o,rx(Object.keys(R),'gu'),R,'');
+}
+function leaks(json){const L=Object.keys(SY.alias).filter(n=>n.length>=3);const re=rx(L,'u');return !!(re&&re.test(json))}
+
+/* --- échanges avec le Sheet --- */
+async function call(action,extra){
+  const ac=new AbortController(),to=setTimeout(()=>ac.abort(),25000);
+  try{
+    const r=await fetch(SY.url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},cache:'no-store',redirect:'follow',signal:ac.signal,
+      body:JSON.stringify(Object.assign({key:SY.key,app:CFG.app,action},extra||{}))});
+    let j;try{j=await r.json()}catch(e){throw new Error('reponse')}
+    if(!j||!j.ok)throw new Error(j&&j.err||'reponse');
+    return j;
+  }finally{clearTimeout(to)}
+}
+const pending=()=>Object.values(TS.list).filter(r=>r&&r.id&&(r.updated||0)>(SY.pushed[r.id]||0));
+function errText(e){const m=e&&e.message||'';
+  if(m==='mot_de_passe')return 'Mot de passe refusé par le Sheet.';
+  if(m==='mot_de_passe_non_defini')return 'Dans le script du Sheet, remplace « à changer » par ton mot de passe, puis redéploie.';
+  if(m==='reponse')return 'Adresse incorrecte : il faut l’adresse du déploiement qui se termine par /exec.';
+  if(!navigator.onLine||e&&e.name==='AbortError'||e instanceof TypeError)return 'Pas de réseau : envoi au retour de la connexion.';
+  return 'Synchro impossible ('+m+').'}
+async function pull(){
+  const j=await call('pull');let changed=false;
+  for(const d of j.docs||[]){
+    let o;try{o=JSON.parse(d.json)}catch(e){continue}
+    if(!o||typeof o!=='object')continue;
+    const r=fromSheet(o);r.id=d.id;r.updated=d.updated||r.updated||0;
+    const loc=TS.list[d.id];
+    if(!loc||(r.updated||0)>(loc.updated||0)){TS.list[d.id]=r;changed=true}
+    if((SY.pushed[d.id]||0)<(d.updated||0))SY.pushed[d.id]=d.updated||0;
+  }
+  st.set('pushed',SY.pushed);SY.lastPull=Date.now();
+  if(changed)after();
+}
+async function push(){
+  let list=pending();SY.blocked=0;
+  while(list.length){
+    const part=list.splice(0,15),docs=[];
+    for(const r of part){const json=toSheet(r);if(leaks(json)){SY.blocked++;continue}docs.push({id:r.id,updated:r.updated||0,deleted:!!r.deleted,json})}
+    if(!docs.length)continue;
+    const j=await call('push',{docs});
+    const sent={};docs.forEach(d=>sent[d.id]=d.updated);
+    (j.accepted||[]).concat(j.rejected||[]).forEach(id=>{if(sent[id]!=null)SY.pushed[id]=Math.max(SY.pushed[id]||0,sent[id])});
+    st.set('pushed',SY.pushed);
+    if((j.rejected||[]).length)SY.again=true;
+  }
+}
+async function sync(withPull){
+  if(!on())return paint();
+  if(SY.busy){SY.again=true;return}
+  if(!navigator.onLine){SY.err='Pas de réseau : envoi au retour de la connexion.';return paint()}
+  SY.busy=true;SY.err='';paint();
+  try{
+    if(withPull)await pull();
+    await push();
+    if(SY.again){SY.again=false;await pull()}
+    SY.last=Date.now();st.set('last',SY.last);
+  }catch(e){SY.err=errText(e)}
+  SY.busy=false;paint();
+}
+function later(){if(!on())return;clearTimeout(SY.timer);SY.timer=setTimeout(()=>sync(false),3000)}
+function after(){
+  try{tsLocal()}catch(e){}
+  try{if(typeof curSync==='function')curSync()}catch(e){}
+  try{if(CFG.app==='volley'&&TS.list.prefs&&TS.list.prefs.cur){Object.assign(CUR,TS.list.prefs.cur);applyCur();renderNav()}}catch(e){}
+  try{tRefresh()}catch(e){}
+  try{if(typeof clRefresh==='function')clRefresh()}catch(e){}
+}
+
+/* --- branchement sur l'appli --- */
+const origPush=window.tsPush;
+window.tsPush=function(t){try{if(origPush)origPush(t)}catch(e){}later()};
+const origText=window.tsStatusText;
+window.tsStatusText=function(){
+  if(!on())return (origText?origText():'')+' Synchro Google Sheet : bouton ☁ en bas à droite.';
+  const n=pending().length,h=SY.last?new Date(SY.last).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):'';
+  if(SY.err)return '⚠ '+SY.err+(n?' '+n+' élément'+(n>1?'s':'')+' en attente.':'');
+  if(n)return 'Enregistré sur cet appareil · '+n+' élément'+(n>1?'s':'')+' à envoyer au Google Sheet.';
+  return '✓ Synchronisé avec ton Google Sheet'+(h?' à '+h:'')+' (initiales uniquement).';
+};
+
+/* --- bouton et réglages --- */
+const css=document.createElement('style');
+css.textContent=`.sy-btn{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:50;width:48px;height:48px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);color:var(--fg);font-size:22px;line-height:1;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.sy-btn i{position:absolute;top:6px;right:6px;width:11px;height:11px;border-radius:50%;background:var(--team-n);border:2px solid var(--surface)}
+.sy-btn[data-s=ok] i{background:var(--ok)}.sy-btn[data-s=wait] i,.sy-btn[data-s=busy] i{background:var(--ball)}.sy-btn[data-s=err] i{background:var(--team-b)}
+.sy-dlg{border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--fg);padding:18px;width:min(520px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow:auto}
+.sy-dlg::backdrop{background:rgba(0,0,0,.45)}
+.sy-dlg h2{font-family:var(--font-display);font-size:26px;margin:0 0 6px}
+.sy-dlg label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:var(--muted);margin-top:12px}
+.sy-dlg input[type=url],.sy-dlg input[type=password]{font:inherit;font-size:16px;padding:9px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--surface);color:var(--fg);width:100%}
+.sy-st{margin-top:12px;padding:10px 12px;border-radius:10px;background:var(--surface-2);font-size:14px}
+.sy-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.sy-small{font-size:13px;color:var(--muted);margin-top:14px}
+@media print{.sy-btn,.sy-dlg{display:none!important}}`;
+document.head.appendChild(css);
+const btn=document.createElement('button');
+btn.type='button';btn.className='sy-btn';btn.innerHTML='☁<i></i>';btn.setAttribute('aria-label','Synchro Google Sheet');
+const dlg=document.createElement('dialog');dlg.className='sy-dlg';
+dlg.innerHTML=`<h2>Synchro Google Sheet</h2>
+<p class="small muted" style="margin:0">Les noms restent sur cet appareil. Le Sheet ne reçoit que des initiales (L.M.), et les noms sont remis au retour.</p>
+<label>Adresse du script (se termine par /exec)<input type="url" id="sy-url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://script.google.com/macros/s/…/exec"></label>
+<label>Mot de passe<input type="password" id="sy-key" autocomplete="off"></label>
+<div class="sy-st" id="sy-st" aria-live="polite"></div>
+<div class="sy-row"><button type="button" class="tb pri" id="sy-save">Enregistrer et synchroniser</button><button type="button" class="tb" id="sy-now">Synchroniser</button><button type="button" class="tb" id="sy-close">Fermer</button></div>
+<p class="sy-small">Correspondance initiales → noms : elle n’existe que sur cet appareil. Garde-en une copie sur ton ordinateur ; elle permet aussi d’afficher les vrais noms sur un autre appareil.</p>
+<div class="sy-row"><button type="button" class="tb mini" id="sy-exp">Exporter la correspondance</button><label class="tb mini" style="margin:0;flex-direction:row;color:var(--fg);font-size:13px">Importer<input type="file" id="sy-imp" accept="application/json,.json" hidden></label><button type="button" class="tb mini" id="sy-forget">Oublier l’adresse et le mot de passe</button></div>`;
+function paint(){
+  const n=on()?pending().length:0;
+  btn.dataset.s=!on()?'off':SY.busy?'busy':SY.err?'err':n?'wait':'ok';
+  const s=document.getElementById('sy-st');
+  if(s){
+    if(!on())s.textContent='Pas encore réglé : colle l’adresse et le mot de passe, puis Enregistrer.';
+    else if(SY.busy)s.textContent='Synchronisation…';
+    else{const h=SY.last?new Date(SY.last).toLocaleString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'jamais';
+      s.textContent=(SY.err?'⚠ '+SY.err+' ':'')+'Dernière synchro : '+h+' · '+n+' élément'+(n>1?'s':'')+' en attente'+(SY.blocked?' · '+SY.blocked+' bloqué(s) : un nom n’a pas pu être remplacé':'')+'.'}
+  }
+  try{if(typeof tsStatusPaint==='function')tsStatusPaint()}catch(e){}
+}
+function dl(name,text){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'application/json'}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)}
+function start(){
+  document.body.appendChild(btn);document.body.appendChild(dlg);
+  const $=id=>document.getElementById(id);
+  btn.onclick=()=>{$('sy-url').value=SY.url;$('sy-key').value=SY.key;paint();if(dlg.showModal)dlg.showModal();else dlg.setAttribute('open','')};
+  $('sy-close').onclick=()=>dlg.close?dlg.close():dlg.removeAttribute('open');
+  $('sy-save').onclick=()=>{SY.url=$('sy-url').value.trim();SY.key=$('sy-key').value;st.set('url',SY.url);st.set('key',SY.key);SY.err='';sync(true)};
+  $('sy-now').onclick=()=>sync(true);
+  $('sy-forget').onclick=()=>{SY.url='';SY.key='';st.set('url','');st.set('key','');SY.err='';paint()};
+  $('sy-exp').onclick=()=>{dict();dl('correspondance-'+CFG.app+'-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify({app:CFG.app,v:1,alias:SY.alias},null,1))};
+  $('sy-imp').onchange=e=>{const f=e.target.files&&e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{
+    let n=0,c=0;try{const o=JSON.parse(rd.result),A=o&&o.alias||{};const used=new Set(Object.values(SY.alias));
+      for(const [nm,a] of Object.entries(A)){if(typeof a!=='string')continue;if(SY.alias[nm]===a)continue;if(SY.alias[nm]||used.has(a)){c++;continue}SY.alias[nm]=a;used.add(a);n++}
+      st.set('alias',SY.alias);
+      const s=document.getElementById('sy-st');if(s)s.textContent=n+' correspondance'+(n>1?'s':'')+' ajoutée'+(n>1?'s':'')+(c?' · '+c+' ignorée(s) (déjà utilisées autrement sur cet appareil)':'')+'.';
+      if(n){for(const [id,r] of Object.entries(TS.list))TS.list[id]=fromSheet(r);after()}
+    }catch(x){const s=document.getElementById('sy-st');if(s)s.textContent='Fichier illisible.'}
+    e.target.value=''};rd.readAsText(f)};
+  paint();
+  window.addEventListener('online',()=>sync(true));
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&Date.now()-SY.lastPull>60000)sync(true)});
+  setInterval(()=>{if(on()&&pending().length&&navigator.onLine&&!SY.busy)sync(false)},120000);
+  setTimeout(()=>sync(true),1200);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
+})();
+</script>
 </body>
 </html>
