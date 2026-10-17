@@ -448,6 +448,9 @@ button.tab.today-btn:not([aria-selected="true"]){border-color:var(--ball);backgr
 .appicon.logoimg{width:46px;height:46px;margin:0;border-radius:12px}
 .test-banner{background:#facc15;color:#111;font:700 15px/1.3 system-ui,sans-serif;text-align:center;padding:8px 12px;position:relative;z-index:99999}
 @media print{.appicon,.test-banner{display:none!important}}</style>
+<link rel="stylesheet" href="eps-design.css">
+<style>:root{--sport:#1d4ed8}</style>
+<script src="eps-commun.js" defer></script>
 </head>
 <body>
 <div class="wrap">
@@ -2361,7 +2364,7 @@ const ENTRIES={g:{label:'Cycle guidé',sub:'séances prêtes, même travail pour
 const A_TOOLS=['demarche','auto','catalogue','carnet','suivi','rot','atp','obs','evalf','checka'];
 function curSessions(){return state.e==='a'?A_SESSIONS:CYCLES[state.c].sessions}
 function curTools(){const T=state.e==='a'?A_TOOLS:CYCLES[state.c].tools;return GYM?T.filter(x=>['rot','obs','evalf','suivi'].includes(x)):T}
-let GYM=false;try{GYM=localStorage.getItem('tt-gym')==='1'}catch(e){}
+let GYM=false;try{{const v=localStorage.getItem('tt-gym');GYM=v===null?(navigator.standalone===true||matchMedia('(display-mode: standalone)').matches):v==='1'}}catch(e){}
 function gymPaint(){document.body.classList.toggle('gym',GYM);const b=document.getElementById('gymbtn');if(b){b.textContent=GYM?'Quitter le mode gymnase':'Mode gymnase';b.classList.toggle('pri',GYM)}}
 function toggleGym(){GYM=!GYM;try{localStorage.setItem('tt-gym',GYM?'1':'0')}catch(e){}gymPaint();show(state.c,state.id,false)}
 function curStart(){return state.e==='a'?(CUR['a'+state.c]||'a1'):CYCLES[state.c].start}
