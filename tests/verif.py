@@ -31,7 +31,7 @@ def verifier_fichiers(dossier):
     ok(bool(shell), 'sw.js contient la liste des fichiers de base')
     manquants = [f for f in shell + files if f != './' and not os.path.exists(os.path.join(dossier, f))]
     ok(not manquants, 'tous les fichiers listés dans sw.js existent' + (f' — manquent : {manquants}' if manquants else ''))
-    html = open(os.path.join(dossier, 'index.html'), encoding='utf-8').read()
+    html = ''.join(open(os.path.join(dossier, f), encoding='utf-8').read() for f in sorted(os.listdir(dossier)) if f.endswith('.html'))  # écran de cours + outil complet
     lies = sorted(set(m for m in re.findall(r'["\'(]((?:pdf/)?[\w\-]+\.pdf)["\')]', html)))
     absents = [f for f in lies if not os.path.exists(os.path.join(dossier, f))]
     ok(not absents, f'les {len(lies)} fiches PDF appelées par la page existent' + (f' — manquent : {absents}' if absents else ''))
@@ -99,13 +99,13 @@ DONNEES = {
 }
 
 
-async def verifier_synchro(nav, dossier, port, app, modele):
+async def verifier_synchro(nav, dossier, port, app, modele, page=''):
     srv = serveur(dossier, port, True)
     try:
         base = f'http://127.0.0.1:{port}/'
         regl = f"localStorage.setItem('sy-{app}-url',JSON.stringify('{base}exec'));localStorage.setItem('sy-{app}-key',JSON.stringify('secret'))"
         cA, A, eA = await contexte(nav, port, sw=False)
-        await A.goto(base, wait_until='domcontentloaded')
+        await A.goto(base + page, wait_until='domcontentloaded')
         ok(await A.locator('.sy-btn').count() == 1, 'bouton de synchro présent')
         await A.evaluate(regl)
         await A.reload(wait_until='domcontentloaded')
@@ -117,7 +117,7 @@ async def verifier_synchro(nav, dossier, port, app, modele):
         fuites = [n for n in NOMS + ['Léa', 'Lucas', 'Martin', 'Dupont'] if n in envoye]
         ok(not fuites, 'aucun nom d’élève envoyé au Sheet' + (f' — FUITE : {fuites}' if fuites else ''))
         cB, B, eB = await contexte(nav, port, sw=False)
-        await B.goto(base, wait_until='domcontentloaded')
+        await B.goto(base + page, wait_until='domcontentloaded')
         await B.evaluate(regl)
         await B.reload(wait_until='domcontentloaded')
         await B.wait_for_timeout(3000)
@@ -146,7 +146,7 @@ async def principal():
             await verifier_hors_ligne(nav, dossier, port)
             if a.get('synchro'):
                 port += 1
-                await verifier_synchro(nav, dossier, port, a['synchro'], a['modele'])
+                await verifier_synchro(nav, dossier, port, a['synchro'], a['modele'], a.get('page', ''))
         await nav.close()
     print('\n' + ('TOUT EST BON' if not ECHECS else f'{len(ECHECS)} PROBLÈME(S) :\n- ' + '\n- '.join(ECHECS)))
     sys.exit(1 if ECHECS else 0)
