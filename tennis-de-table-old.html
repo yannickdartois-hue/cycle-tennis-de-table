@@ -451,6 +451,9 @@ button.tab.today-btn:not([aria-selected="true"]){border-color:var(--ball);backgr
 <link rel="stylesheet" href="eps-design.css">
 <style>:root{--sport:#1d4ed8}</style>
 <script src="eps-commun.js" defer></script>
+<script>/* Ouvert depuis l’écran de cours (bouton Outils) : on ne garde que le contenu de l’outil. */
+try{if(window.self!==window.top)document.documentElement.classList.add('outil')}catch(e){document.documentElement.classList.add('outil')}</script>
+<style>html.outil .wrap>header,html.outil .wrap>nav,html.outil .wrap>.foot,html.outil body>header.top{display:none!important}html.outil .wrap{padding-top:12px}</style>
 </head>
 <body>
 <div class="wrap">
