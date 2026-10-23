@@ -660,7 +660,7 @@ async function tsInit(){
     tRefresh();if(typeof curSync==='function')curSync();
   }catch(e){TS.col=null;TS.cloud=false}
 }
-function tsStatusText(){return TS.cloud?(TS.err?'⚠ Dernier enregistrement en ligne échoué : les résultats restent sur cet appareil.':'✓ Résultats enregistrés sur ton compte : tu les retrouves sur l’iPad comme sur l’ordinateur.'):'Résultats enregistrés sur cet appareil uniquement. Exporte-les de temps en temps (bouton plus bas).'}
+function tsStatusText(){return TS.cloud?(TS.err?'⚠ Dernier enregistrement en ligne échoué : les résultats restent sur cet appareil.':'✓ Résultats enregistrés sur ton compte : tu les retrouves sur l’iPad comme sur l’ordinateur.'):'Résultats enregistrés sur cet appareil uniquement. Exporte-les de temps en temps (bouton plus bas). Pour la note : outil prof → Importer → « Tournois joués sans tablettes ».'}
 function tsStatusPaint(){document.querySelectorAll('.tz-sync').forEach(e=>e.textContent=tsStatusText())}
 function tFmtDate(iso){try{return new Date(iso).toLocaleDateString('fr-FR',{day:'numeric',month:'short'})}catch(e){return ''}}
 function tCurT(){return TS.open&&TS.list[TS.open]&&!TS.list[TS.open].deleted?TS.list[TS.open]:null}
@@ -865,7 +865,10 @@ function tzLive(t){
 }
 function tzInner(){const t=tCurT();if(t){const ty=t.type||'md';return ty==='swiss'?swLive(t):ty==='atp'?atpLive(t):tzLive(t)}return TS.view==='swiss'?swSetup():TS.view==='atp'?atpSetup():tzSetup()}
 /* ===== Listes de classe enregistrées (réutilisées par les trois formats) ===== */
-function rosterAll(){try{return JSON.parse(localStorage.getItem('tt-classes')||'{}')||{}}catch(e){return {}}}
+function rosterAll(){let R={};try{R=JSON.parse(localStorage.getItem('tt-classes')||'{}')||{}}catch(e){}
+  /* Classes importées depuis Pronote dans l'outil prof (même appareil) : elles sont la référence. */
+  try{const P=JSON.parse(localStorage.getItem('tte-prof-v1')||'{}')||{};Object.entries(P.classesL||{}).forEach(([c,x])=>{if(x&&x.eleves&&x.eleves.length)R[c]=x.eleves.join('\n')})}catch(e){}
+  return R}
 function rosterSave(k,names,mode){if(!k||!names||names.length<2)return;const R=rosterAll();R[k+(mode==='binome'?' (binômes)':'')]=names.join('\n');try{localStorage.setItem('tt-classes',JSON.stringify(R))}catch(e){}}
 function rosterPicker(target,bin){
   const R=rosterAll(),ks=Object.keys(R).filter(k=>bin?/\(binômes\)$/.test(k):!/\(binômes\)$/.test(k));
