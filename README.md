@@ -20,6 +20,6 @@ Tournois, classes, séance du jour, évaluations : enregistrés dans le navigate
 
 ## Organisation des pages (18/10/2026)
 - `index.html` : **la version actuelle du cycle**, l'écran de cours (même famille que le volley et le step). Séances dans le bandeau, bascule de niveau, déroulé ajustable (rallonger, zapper, remplacer), variables, schémas.
-- `tennis-de-table-old.html` : l'outil précédent, gardé par sécurité, inchangé. Tous les outils y restent (bouton « Préparer ») : c'est là qu'on marque la séance du jour.
+- `outils.html` (ancien nom `tennis-de-table-old.html`, qui redirige ici) : la page outils, contenu inchangé. Tous les outils y restent (bouton « Préparer ») : c'est là qu'on marque la séance du jour.
 - `tennis-de-table-donnees.js` : séances, schémas et échauffements, partagés par les deux pages.
 - `polices/` : polices embarquées pour le hors ligne (licence SIL OFL).

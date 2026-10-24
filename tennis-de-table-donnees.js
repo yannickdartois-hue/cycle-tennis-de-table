@@ -1,5 +1,5 @@
 /* Données du cycle de tennis de table (Lycée G. Pompidou) : séances, schémas, échauffements.
-   Partagées par l'écran de cours (index.html) et l'outil complet (tennis-de-table-old.html). */
+   Partagées par l'écran de cours (index.html) et l'outil complet (outils.html). */
 let SID=0;
 const S=118, MX=1.2, MY=0.62, TL=2.74, TW=1.525;
 const X=m=>(m+MX)*S, Y=m=>(m+MY)*S;

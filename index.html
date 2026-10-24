@@ -14,7 +14,7 @@
 <link rel="stylesheet" href="ecran.css">
 <style>
 /* ===== Propre au cycle tennis de table : couleurs, niveaux, schémas ===== */
-:root{--sol:#ECEFEE; --craie:#FFFFFF; --encre:#172033; --repere:#5A6475; --trait:#D5DBDD;
+:root{--sol:#F3F5F8; --craie:#FFFFFF; --encre:#172033; --repere:#5A6475; --trait:#DDE2E8;
   --ligne:#EA580C; --ligne-fonce:#9A3412; --ligne-pale:#FDEBDD;
   --vert:#1D6B3A; --vert-pale:#E6F3EA; --alerte:#B42318; --alerte-pale:#FDE8E6;
   --facile:#2F6FB0; --facile-pale:#EAF2FB; --dur:#B4441C; --dur-pale:#FCEDE6;
@@ -94,6 +94,8 @@ body.niv-a{--niv:var(--c-a);--niv-pale:var(--c-a-pale)}
 .cy button[data-cy=a].on{background:var(--c-a);color:var(--sur-niv)}
 .pc.niv-a .sc.jour{outline-color:var(--c-a)}
 .pc.niv-a{--nivp:var(--c-a)}
+/* Téléphone : frise sans libellés tronqués (le nom de l'étape est dans la carte), barre du bas tenue dans l'écran */
+@media (max-width:560px){.blocs span{display:none}.blocs b{font-size:14px}.pouce{gap:6px;padding-left:10px;padding-right:10px}.pouce .bt{flex:1 1 0;min-width:0;padding:0 6px;font-size:15px;white-space:normal;line-height:1.1;text-align:center}}
 </style>
 </head>
 <body>
@@ -102,7 +104,7 @@ body.niv-a{--niv:var(--c-a);--niv-pale:var(--c-a-pale)}
   <div class="app">Tennis de table<small>Lycée Pompidou</small></div>
   <span class="pastille-niv" id="cyPast">Tle</span>
   <div class="titre" id="titre"></div>
-  <a class="bt clair" id="prep" href="tennis-de-table-old.html">Préparer</a>
+  <a class="bt clair" id="prep" href="outils.html">Préparer</a>
 </header>
 <div class="trace"></div>
 <div class="niveau" id="niveau"></div>
@@ -123,7 +125,7 @@ body.niv-a{--niv:var(--c-a);--niv-pale:var(--c-a-pale)}
    Source : mon-eps/atelier/ecran-de-cours/apps/. Le moteur commun est ecran.js. */
 let CUR_A='t';   /* leçons en autonomie : Terminale (at) ou Première (ap) */
 const APP={
-  old:'tennis-de-table-old.html',
+  old:'outils.html',
   cle:'tq',
   niv:{p:{label:'Première',court:'1re',long:'PREMIÈRE',L:P_SESSIONS},t:{label:'Terminale',court:'Tle',long:'TERMINALE',L:T_SESSIONS},a:{label:'Autonomie',court:'Auto',long:'AUTONOMIE',L:A_SESSIONS}},
   defaut:'t',
