@@ -39,13 +39,13 @@ body.niv-a{--niv:var(--c-a);--niv-pale:var(--c-a-pale)}
   --font-body:"Source Sans 3","Segoe UI",Roboto,Arial,sans-serif;
 ;--bg:#fff;--surface:#fff;--surface-2:#eef1f5;--fg:#111;--muted:#444;--line:#999;--sport:#1d4ed8}
 .schema{background:#fff;color:#14202e;border-radius:14px;padding:8px;font-family:var(--t)}
-.legende-o{margin:8px 4px 0;font-size:14px;color:var(--repere)}
+.legende-o{margin:8px 4px 0;font-size:max(14px,var(--fs-min,15px));color:var(--repere)}
 .legende-o .legend{display:flex;flex-wrap:wrap;gap:4px 14px}
 .legende-o i{display:inline-block;vertical-align:middle;margin-right:4px}
 .legende-o .dot{width:12px;height:12px;border-radius:50%}
 .legende-o .lineb{width:22px;border-top:2px dashed currentColor}
 .legende-o .liner{width:22px;border-top:2px solid currentColor}
-.schema .legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--muted);margin-top:4px}
+.schema .legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:max(12px,var(--fs-min,15px));color:var(--muted);margin-top:4px}
 .schema .legend i{display:inline-block;vertical-align:middle;margin-right:4px}
 .schema .dot{width:10px;height:10px;border-radius:50%}
 .schema .liner{width:22px;border-top:2px solid var(--fg)}
@@ -53,18 +53,18 @@ body.niv-a{--niv:var(--c-a);--niv-pale:var(--c-a-pale)}
 .schema .c-line{stroke:var(--court-line);stroke-width:2;fill:none}
 .schema .c-net{stroke:var(--net);stroke-width:4}
 .schema .c-zone{fill:var(--accent);fill-opacity:.12;stroke:var(--accent);stroke-opacity:.5;stroke-dasharray:4 4}
-.schema .c-zonet{fill:var(--accent);font:600 11px var(--font-body)}
+.schema .c-zonet{fill:var(--accent);font:600 max(11px,var(--fs-min,15px)) var(--font-body)}
 .schema .c-target{fill:var(--ball);fill-opacity:.25;stroke:var(--ball);stroke-width:1.5}
 .schema .c-pa{fill:var(--accent)}
 .schema .c-pb{fill:var(--team-b)}
 .schema .c-pn{fill:var(--team-n)}
-.schema .c-pt{fill:#ffffff;font:700 12px var(--font-body);text-anchor:middle;dominant-baseline:central}
+.schema .c-pt{fill:#ffffff;font:700 max(12px,var(--fs-min,15px)) var(--font-body);text-anchor:middle;dominant-baseline:central}
 .schema .c-ball{stroke:var(--ball);stroke-width:2;stroke-dasharray:6 4;fill:none}
 .schema .c-run{stroke:var(--fg);stroke-width:2;fill:none}
 .schema .c-head-b{fill:var(--ball)}
 .schema .c-head-r{fill:var(--fg)}
-.schema .c-label{fill:var(--fg);font:600 12px var(--font-body)}
-.schema .c-say{fill:var(--fg);font:italic 600 12px var(--font-body)}
+.schema .c-label{fill:var(--fg);font:600 max(12px,var(--fs-min,15px)) var(--font-body)}
+.schema .c-say{fill:var(--fg);font:italic 600 max(12px,var(--fs-min,15px)) var(--font-body)}
 .schema .teq-sch .c-label,.schema .teq-sch .c-say{font-size:23px;font-weight:700}
 .schema .teq-sch .c-pt{font-size:20px}
 .schema .legend{display:none}
@@ -74,8 +74,8 @@ body.niv-a{--niv:var(--c-a);--niv-pale:var(--c-a-pale)}
 .schema .c-netpost{fill:var(--net)}
 .schema .c-zone{fill:#ffffff;fill-opacity:.16;stroke:#ffd166;stroke-width:1.6;stroke-dasharray:5 3}
 .schema .c-zone.no{fill:#e5484d;fill-opacity:.28;stroke:#e5484d}
-.schema .c-zonet{fill:#ffe9a8;font:700 11px var(--font-body)}
-.schema .c-labt{fill:#ffffff;font:600 12px var(--font-body)}
+.schema .c-zonet{fill:#ffe9a8;font:700 max(11px,var(--fs-min,15px)) var(--font-body)}
+.schema .c-labt{fill:#ffffff;font:600 max(12px,var(--fs-min,15px)) var(--font-body)}
 .schema .c-bounce{fill:var(--ball);stroke:#fff;stroke-width:1.2}
 .schema .c-fold{fill:var(--court);opacity:.95}
 .schema .c-basket{fill:var(--surface);stroke:var(--fg);stroke-width:1.6}
@@ -86,7 +86,7 @@ body.niv-a{--niv:var(--c-a);--niv-pale:var(--c-a-pale)}
 .schema .c-head-g{fill:var(--ok)}
 .schema .c-down{stroke:var(--team-b);stroke-width:2.2;fill:none}
 .schema .c-head-o{fill:var(--team-b)}
-.schema .c-tnum{fill:var(--fg);font:700 13px var(--font-display)}
+.schema .c-tnum{fill:var(--fg);font:700 max(13px,var(--fs-min,15px)) var(--font-display)}
 .schema .lineo{width:22px;border-top:2px dashed var(--ball)}
 .cy button[data-cy=p].on{background:var(--c-p);color:var(--sur-niv)}
 .pc.niv-p .sc.jour{outline-color:var(--c-p)}
@@ -95,8 +95,9 @@ body.niv-a{--niv:var(--c-a);--niv-pale:var(--c-a-pale)}
 .pc.niv-a .sc.jour{outline-color:var(--c-a)}
 .pc.niv-a{--nivp:var(--c-a)}
 /* Téléphone : frise sans libellés tronqués (le nom de l'étape est dans la carte), barre du bas tenue dans l'écran */
-@media (max-width:560px){.blocs span{display:none}.blocs b{font-size:14px}.pouce{gap:6px;padding-left:10px;padding-right:10px}.pouce .bt{flex:1 1 0;min-width:0;padding:0 6px;font-size:15px;white-space:normal;line-height:1.1;text-align:center}}
+@media (max-width:560px){.blocs span{display:none}.blocs b{font-size:max(14px,var(--fs-min,15px))}.pouce{gap:6px;padding-left:10px;padding-right:10px}.pouce .bt{flex:1 1 0;min-width:0;padding:0 6px;font-size:15px;white-space:normal;line-height:1.1;text-align:center}}
 </style>
+<style>/* Lisibilité terrain : textes à 15 px minimum à l'écran ; tailles d'origine à l'impression. */@media print{:root{--fs-min:0px}}</style>
 </head>
 <body>
 <header class="barre">
