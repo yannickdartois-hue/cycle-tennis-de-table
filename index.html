@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#EA580C">
+<meta name="theme-color" content="#be185d">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Tennis de table">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -98,6 +98,31 @@ body.niv-a{--niv:var(--c-a);--niv-pale:var(--c-a-pale)}
 @media (max-width:560px){.blocs span{display:none}.blocs b{font-size:max(14px,var(--fs-min,15px))}.pouce{gap:6px;padding-left:10px;padding-right:10px}.pouce .bt{flex:1 1 0;min-width:0;padding:0 6px;font-size:15px;white-space:normal;line-height:1.1;text-align:center}}
 </style>
 <style>/* Lisibilité terrain : textes à 15 px minimum à l'écran ; tailles d'origine à l'impression. */@media print{:root{--fs-min:0px}}</style>
+<link rel="stylesheet" href="eps-charte-v1.css">
+<style>/* Charte v1 : couleur de l'activité et teinte de chaque cycle (calculées par construire.py) */
+:root{--act:#be185d;--act-fonce:#760f3a;--act-pale:#f7e3ec;--act-sombre:#db80a6;--act-pale-sombre:#3b1a2f}
+:root{--c-p:#f2d1df;--c-p-pale:#f7e3ec}
+body.niv-p{--niv:#f2d1df;--sur-niv:#1c2128;--niv-pale:var(--act-pale)}
+:root[data-theme="dark"] body.niv-p{--niv:#621a3d;--sur-niv:#e6edf3}
+.cy button[data-cy=p].on{background:#f2d1df;color:#1c2128}
+:root[data-theme="dark"] .cy button[data-cy=p].on{background:#621a3d;color:#e6edf3}
+.pc.niv-p .sc.jour{outline-color:var(--ligne)}
+.pc.niv-p{--nivp:#be185d}
+:root{--c-t:#760f3a;--c-t-pale:#f7e3ec}
+body.niv-t{--niv:#760f3a;--sur-niv:#ffffff;--niv-pale:var(--act-pale)}
+:root[data-theme="dark"] body.niv-t{--niv:#e297b6;--sur-niv:#0d1117}
+.cy button[data-cy=t].on{background:#760f3a;color:#ffffff}
+:root[data-theme="dark"] .cy button[data-cy=t].on{background:#e297b6;color:#0d1117}
+.pc.niv-t .sc.jour{outline-color:var(--ligne)}
+.pc.niv-t{--nivp:#760f3a}
+:root{--c-a:#be185d;--c-a-pale:#f7e3ec}
+body.niv-a{--niv:#be185d;--sur-niv:#ffffff;--niv-pale:var(--act-pale)}
+:root[data-theme="dark"] body.niv-a{--niv:#ce5286;--sur-niv:#0d1117}
+.cy button[data-cy=a].on{background:#be185d;color:#ffffff}
+:root[data-theme="dark"] .cy button[data-cy=a].on{background:#ce5286;color:#0d1117}
+.pc.niv-a .sc.jour{outline-color:var(--ligne)}
+.pc.niv-a{--nivp:#be185d}
+</style>
 </head>
 <body>
 <header class="barre">

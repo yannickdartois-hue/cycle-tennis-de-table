@@ -9,13 +9,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Tennis table">
-<meta name="theme-color" content="#1d4ed8">
+<meta name="theme-color" content="#be185d">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>[hidden]{display:none!important}img{max-width:100%}</style>
 <title>Cycle tennis de table · outils</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
 <style>
 /* Mise en page : bandeau de boutons (cycles, outils, séances) puis une fiche détaillée à la fois, comme un classeur de gymnase. */
 :root{
@@ -456,6 +453,22 @@ button.tab.today-btn:not([aria-selected="true"]){border-color:var(--ball);backgr
 try{if(window.self!==window.top)document.documentElement.classList.add('outil')}catch(e){document.documentElement.classList.add('outil')}</script>
 <style>html.outil .wrap>header,html.outil .wrap>nav,html.outil .wrap>.foot,html.outil body>header.top{display:none!important}html.outil .wrap{padding-top:12px}</style>
 <style>/* Lisibilité terrain : textes à 15 px minimum à l'écran ; tailles d'origine à l'impression. */@media print{:root{--fs-min:0px}}</style>
+<link rel="stylesheet" href="eps-charte-v1.css">
+<style>/* Charte v1 — Tennis de table : couleur de l'activité ; cycles : p=clair, t=foncé, a=normal */
+:root{--act:#be185d;--act-fonce:#760f3a;--act-pale:#f7e3ec;--act-sombre:#db80a6;--act-pale-sombre:#3b1a2f;
+  --accent:#be185d;--accent-soft:#f7e3ec;--accent-fg:#ffffff;--sport:#be185d}
+:root[data-theme="dark"]{--accent:#db80a6;--accent-soft:#3b1a2f;--accent-fg:#0d1117;--sport:#db80a6}
+:root{--cy-p:#be185d;--cy-p-bg:#f2d1df}
+:root[data-theme="dark"]{--cy-p:#e5a3be;--cy-p-bg:#401a31}
+button.tab.cycle.cp[aria-selected="true"]{background:var(--cy-p-bg);border-color:var(--cy-p)}
+button.tab.cycle.cp[aria-selected="true"] b{color:var(--act-fonce)}
+:root[data-cycle="p"] .cyband{background:var(--cy-p-bg);color:#1c2128}
+:root[data-theme="dark"] button.tab.cycle.cp[aria-selected="true"] b,:root[data-theme="dark"][data-cycle="p"] .cyband{color:#e6edf3}
+:root{--cy-t:#760f3a;--cy-t-bg:#f7e3ec}
+:root[data-theme="dark"]{--cy-t:#db80a6;--cy-t-bg:#401a31}
+:root{--cy-a:#be185d;--cy-a-bg:#f7e3ec}
+:root[data-theme="dark"]{--cy-a:#db80a6;--cy-a-bg:#401a31}
+</style>
 </head>
 <body>
 <div class="wrap">
