@@ -1912,9 +1912,10 @@ function renderSession(s){
   const chips=`<div class="sesschips">${tbtn}<details class="chip-d ev"><summary>Évaluation S9</summary><ul>${s.eval.map(x=>`<li><b>${EVAL_SHORT[x[0]]}.</b> ${x[1]}</li>`).join('')}</ul></details>${slot?`<details class="chip-d ob"><summary>Observer : groupe${slot.g.length>1?'s':''} ${slot.g.map(g=>OB_G[g]).join(' + ')}</summary><p>${obWhere(sk)} <a href="#" data-go="obs">Plan d’observation</a></p></details>`:''}</div>`;
   const help=state.e==='a'?'Exercices : <a href="#" data-go="catalogue">catalogue</a> · carnet : <a href="#" data-go="carnet">fiche élève</a> · suivi : <a href="#" data-go="suivi">onglet Suivi</a>.':'Élèves en grande difficulté : <a href="#" data-go="beg">Débutants</a> · niveaux : <a href="#" data-go="bank">Banque</a>.';
   return `<div class="panel sess">${statusChip(s.status)}<h2>${s.n} · ${s.title}</h2><p class="lead clamp">${s.lead}</p>${tl}${chips}
+   ${s.tl.some(x=>x.length>2)?s.tl.map(x=>typeof x[2]==='number'&&s.ex[x[2]]?exCard(Object.assign({},s.ex[x[2]],{d:x[1]+' min'})):x[2]==='bilan'?`<section class="ex"><div class="ex-head"><h3>${x[0]}</h3><span class="dur">${x[1]} min</span></div><p>${s.bilan}</p></section>`:`<section class="ex"><div class="ex-head"><h3>${x[0]}</h3><span class="dur">${x[1]} min</span></div><p>${s.warm||''}</p></section>`).join(''):`
    <section class="ex"><div class="ex-head"><h3>${s.tl[0][0]}</h3><span class="dur">${s.tl[0][1]} min</span></div><p>${s.warm}${state.e==='a'?'':' <a href="#" data-go="warm">Échauffements</a>'}</p></section>
    ${s.ex.map((e,i)=>exCard(Object.assign({},e,{d:s.tl[i+1][1]+' min'}))).join('')}
-   <section class="ex"><div class="ex-head"><h3>${s.tl[s.tl.length-1][0]}</h3><span class="dur">${s.tl[s.tl.length-1][1]} min</span></div><p>${s.bilan}</p></section>
+   <section class="ex"><div class="ex-head"><h3>${s.tl[s.tl.length-1][0]}</h3><span class="dur">${s.tl[s.tl.length-1][1]} min</span></div><p>${s.bilan}</p></section>`}
    ${s.check?`<p class="small muted"><b>Lien avec l’épreuve.</b> ${s.check}</p>`:''}
    <p class="small muted noprint">${help}</p></div>`;
 }
